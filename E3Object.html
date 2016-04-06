@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="E3DC/test.css" />
+    <title></title>
+</head>
+<body>
+<script src="js/E3OBJX.js"></script>
+<script id="t">
+    //创建对象
+    var a1=new E3_Object("a1");
+    var a2={foo:"Hello"};
+    E3_Object.make(a2,"a2");
+    //创建父子关系
+    var a3=new E3_Object("a3",a1);
+    a1.SHost(a2);
+    // a1{a2,a3}
+    //设置属性
+    a2.Var("v2");
+    a1.Var("v1",1);
+    a3.SetEv("v3",3);
+    console.log(a1.InLine(1));//a1(v1:1){a3(v3:3),a2(v2:null)}
+    //访问属性 支持直系亲属属性寻找
+    console.log(a1.Ev("v3"));//3
+    console.log(a2.Ev("v1"));//1
+    a1.SetEv("v2",2);
+    console.log(a1.InLine(1));//a1(v1:1){a3(v3:3),a2(v2:2)}
+    //设置过程
+    a1.On("some function",5,function(e){
+        e.s= e.s+" ";
+    });
+    a2.On("some function",3,function(e){
+        e.s= e.s+this.foo;//hello
+    });
+    a2.On("some function",8,function(e){
+        e.s= e.s+"!";//hello
+    });
+    a1.Var("str","world");
+    a3.On("some function",6,function(e){
+        e.s= e.s+this.Ev("str");//world!
+    });
+    //触发过程
+    var rt=a1.Call("some function",{s:"E3OBJX: "});
+    console.log(rt.s)//E3OBJX: Hello world!
+
+    //过程参数 以及 全局监听
+    a3.On(null,0,function(e){
+        console.log(e.Caller,this, e.FuncName);
+    });
+    a1.Call("event");//E3_Object {name: "a1", E3_Data: Object} E3_Object {name: "a3", E3_Data: Object} "event"
+
+    //取消监听
+    a3.On(null,0);
+
+    //遍历功能
+    a1.DoIn(function(e){
+        console.log(e);
+    });
+
+    //包含功能
+    console.log(a1.Has(a3));//a3
+    console.log(a1.Has(function(e){return e.foo}))//a2
+
+
+    //组合功能
+    var attackFunction1=function(e){
+         console.log(this.name,"被攻击了");
+    };
+    a2.OnIn("attack",5,"target",attackFunction1);
+    a3.OnIn("attack",5,"target",attackFunction1);
+    a1.Call("attack",{target:a2});//a2 被攻击了
+    a1.Call("attack",{target:a1});//a2 被攻击了 a3 被攻击了
+
+
+    //高级功能：未实用
+    //因为既进行了函数分块，又进行了环境保存，于是就做了一个协线程功能，但是估计还没直接事件好用
+    a1.On("some coroutine",5,function(e){
+        e.i=0;
+    });
+    a1.On("some coroutine",8,function(e){
+        console.log(e.i);
+        e.i++;
+        e.Yield();
+    });
+    a1.On("some coroutine",9,function(e){
+        if(e.i<5){
+            e.GoTo(7);
+        }
+    });
+    a1.On("some coroutine",11,function(e){
+        console.log("exit");
+    });
+    a1.Call("some coroutine");
+    for(var i=0;i<7;i++){
+        a1.Call("yield");
+    }
+    // 0 1 2 3 4 exit
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="E3DC/test.css" />
+    <title></title>
+</head>
+<body style="text-align: center;height: 100%;margin: 0">
+<script src="js/E3OBJX.js"></script>
+<script src="E3DC/DomBuilder.js"></script>
+<script src="E3DC/DataSource.js"></script>
+<script src="E3DC/SideBar.js"></script>
+<script src="E3DC/ETab.js"></script>
+<script src="main.js"></script>
+<script>
+    //var k=DataSource.generateDataSourceTest([,,,[,,,],[,,,,],[,,,,,],1]);
+
+    //document.body.setStatic();
+    timer.start();
+
+    var tb=new ETab("控制面板",0,0,300,200,30);
+    document.body.$ap(tb.dom);
+
+    var cx=tb.dom.$Gap("div");
+    var b1=$g("button").$t("创建飞船");
+    b1.onclick=function(e){
+        commander.createShip();
+    };
+    cx.$ap(b1);
+    var c1= cx.$Gap("input");
+    c1.type="checkbox";
+    cx.$Gap("span").$t("绘制实际飞船的情况");
+    c1.onchange=function(){
+        if(this.checked){
+            universe.SetEv("draw_type","normal");
+        }else{
+            universe.SetEv("draw_type","virtual");
+        }
+    };
+    tb.dom.$Gap("div").$ap($g("button").$t("显示物体表").$v("onclick",function(){ document.body.$ap(tl.dom);refreshtree();}))
+            .$ap($g("button").$t("在控制台打印宇宙").$v("onclick",function(){ console.log(universe);console.log(universe.InLine(1)); message.log(universe.InLine(1));}));
+
+
+    var tc=new ETab("控制台输出",0,300,300,250,30);
+    document.body.$ap(tc.dom);
+
+    var tl=new ETab("物体表",document.body.clientWidth-320,0,300,700,30);
+    document.body.$ap(tl.dom);
+    tl.dom.setStatic();
+    universe.DSMakeChilds();
+    var tree=new SideBar(universe);
+    function refreshtree(){
+        universe.DSMakeChilds();
+        tree.make();
+        tree.dom.style.height="680px";
+        tree.dom.style.overflow="auto";
+    }
+
+    tl.dom.$Gap("div").$ap($g("button").$t("刷新").$v("onclick",refreshtree)).$ap($g("button").$t("关闭").$v("onclick",function(){tl.dom.$del()}));
+    tl.dom.$ap(tree.dom);
+
+    message.console=tc.dom.$Gap("div").$c("console");
+
+
+</script>
+
+</body>
+</html>
